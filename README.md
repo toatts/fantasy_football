@@ -29,6 +29,12 @@ $ python ff_draft_organizer.py -v [verbosity 0-2] -o [output file]
 
 Changelist:
 -----------
+###v0.4:
+- Add quality starts stat from http://www.fantasypros.com/nfl/players/quality-starts.php?position=QB
+- Only attempt to create output file if user requests it (default setting for no inputs 
+  is verbosity 1 and no output)
+- Fix update date and add in projection sources
+- Cleanup many duplicate code sections with functions
 
 ###v0.3: 
 - Updated README to use markdown
@@ -46,9 +52,7 @@ Changelist:
 
 Future Releases:
 ----------------
-- Only attempt to create output file if user requests it (default setting for no inputs 
-  is verbosity 1, no output)
-- Add quality starts to list from http://www.fantasypros.com/nfl/players/quality-starts.php?position=QB
+- Confirm config.py settings for current year (average last years in)
 - Use http://www.fantasypros.com/nfl/depth-charts.php for depth chart additions
 - Use http://www.cbssports.com/nfl/injuries for injury news 
 - Modify usage for snake draft (require command line input to choose which method)

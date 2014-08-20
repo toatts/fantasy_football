@@ -40,5 +40,5 @@ starting_tes         =  1.33    # Max number of starting TEs per team
 
 # KEEPERS ===================================================================================
 keeper_money_used =     0       # Total amount of auction money used towards keepers
-keeper_value =          0       # Total amount of monetary value absorbed by keepers
+keeper_value =          0       # Total amount of projected value absorbed by keepers
 
