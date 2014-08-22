@@ -29,6 +29,12 @@ $ python ff_draft_organizer.py -v [verbosity 0-2] -o [output file]
 
 Changelist:
 -----------
+###v0.5:
+- Fix name matching issues (remove special characters)
+- Use http://www.fantasypros.com/nfl/depth-charts.php for depth chart additions
+- Use http://www.cbssports.com/nfl/injuries for injury news 
+- Optimize name searching
+
 ###v0.4:
 - Add quality starts stat from http://www.fantasypros.com/nfl/players/quality-starts.php?position=QB
 - Only attempt to create output file if user requests it (default setting for no inputs 
@@ -52,9 +58,11 @@ Changelist:
 
 Future Releases:
 ----------------
+- Fix console display (try to merge with text printout)
+- Only display total table on -v 1
 - Confirm config.py settings for current year (average last years in)
-- Use http://www.fantasypros.com/nfl/depth-charts.php for depth chart additions
-- Use http://www.cbssports.com/nfl/injuries for injury news 
+- Test strategy with mock auction draft on test league
 - Modify usage for snake draft (require command line input to choose which method)
+- Write data to a database? Update database when new, read in current info otherwise?
 
 
