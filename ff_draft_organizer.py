@@ -961,7 +961,7 @@ def main(argv):
     if (VERBOSITY >= 2):
         print ("Sorting all players by marginal value...")
     tmp_table = all_player_table
-    all_player_table = sorted(tmp_table, key=lambda player: player.marg_val, reverse=True)
+    all_player_table = sorted(tmp_table, key=lambda player : (player.marg_val, player.cust_fpts), reverse=True)
 
     # Write column categories to file
     if OUT_FILE:
