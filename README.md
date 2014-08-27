@@ -65,5 +65,4 @@ Changelist:
 
 Future Releases:
 ----------------
-- Test strategy with mock auction draft on test league
 - Write data to a database? Update database when new, read in current info otherwise?
