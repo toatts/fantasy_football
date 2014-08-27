@@ -40,9 +40,18 @@ starting_tes         = 1.33     # Max number of starting TEs per team
 
 # KEEPERS ===================================================================================
 # Projected Keepers
-#         Lacy
-kpr_pr  = 43
-kpr_val = 44
+#         Me                Pomy              HDR               MUGG
+#         FISH              HELL              (._. )            Psycho
+#         Osos              MOON              Dr.               865
+#         EdLa, AJGr, ????, DeMu, RaCo, ZaSt, DrBr, ViCr, JuTh, PeMa, CaJo, ????,
+#         ????, ????, ????, DeTh, ????, ????, ????, ????, ????, ????, ????, ????,
+#         AnLu, ????, ????, JuJo, JiGr, KeAl, ????, ????, ????, ????, ????, ????
+kpr_pr  = (43  + 7       + 1     + 1   + 3    + 41   + 1   + 1     + 31     + 38
+                         + 1
+          + 3            + 7     + 1   + 1                                                   )
+kpr_val = (44  + 36       + 45    + 28    + 33 + 29   + 20  + 32    + 38     + 49
+                         + 46
+          + 17           + 39    + 48    + 18                                                )
 
 keeper_money_used    = kpr_pr   # Total amount of auction money used towards keepers
 keeper_value         = kpr_val  # Total amount of projected value absorbed by keepers

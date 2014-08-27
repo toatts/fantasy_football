@@ -1,0 +1,10 @@
+1. Apply gradients to Custom Fantasy Points, Marginal Value, Static Inflation, Dynamic Inflation, Games, Quality Points, Quality Percent
+(Conditional Formatting tab, Data Bars, Gradient Fill, apply by column)
+
+2. Apply category coloring (ES = Blue, S = Green, TR = Yellow, R = Red)
+Conditional Formatting tab, Highlight Cells Rule, Text That Contains
+Must be done individually for each of the four
+
+3. Conditionally highlight column
+Conditional formatting, new rule, use a formula to determine which cells to format, =NOT(ISBLANK($ColNum)), format fill orange.
+Manage rules, applies to, =$A:$EndCol

@@ -31,6 +31,7 @@ import config
 
 from html.parser import HTMLParser
 
+
 # GLOBALS ===================================================================================
 # League Info
 TOTAL_TEAMS      = config.teams
@@ -78,19 +79,22 @@ TE_STARTER       = math.ceil(config.teams * config.starting_tes) - 1
 TE_ELITE_STARTER = math.ceil(config.teams * config.starting_tes * 0.5) - 1
 
 # Program Settings
-# 0 = none/little, 1 = chart displays, 2 = all (debug messaging)
+# 0 = minimal, 1 = chart display, 2 = all (debug messaging)
 VERBOSITY        = 1
 OUT_FILE         = ''
+DRAFT_TYPE       = "auction"
 HELP_MSG  = (
 "Usage: python ff_draft_organizer.py <-opt setting>\n"
 "-option      [description]\n"
 "-h           [help file, prints out this message]\n"
 "-v <0-2>     [verbosity, 0 = minimal, 1 = chart display (default), 2 = debug]\n"
 "-o <file>    [output file, tab separated value type, if not specified then none created]\n"
+"-t <type>    [draft type, use snake or auction (default)]\n"
 )
 
 
 # CLASSES ===================================================================================
+# Consensus Projections HMTL Parsing
 class Projections_HTMLParser(HTMLParser):
     def __init__(self, *args, **kwargs):
         HTMLParser.__init__(self)
@@ -98,7 +102,6 @@ class Projections_HTMLParser(HTMLParser):
         self.isExpert     = False
         self.expert       = []
         self.experts      = []
-
         self.startPlayer  = False
         self.statsTable   = False
         self.isName       = False
@@ -170,6 +173,7 @@ class Projections_HTMLParser(HTMLParser):
             self.player = []
             self.startPlayer = False
 
+# Quality Starts HTML Parsing
 class QS_HTMLParser(HTMLParser):
     def __init__(self, *args, **kwargs):
         HTMLParser.__init__(self)
@@ -206,6 +210,7 @@ class QS_HTMLParser(HTMLParser):
             self.players.append(self.player)
             self.player = []
 
+# Depth Charts HTML Parsing
 class DC_HTMLParser(HTMLParser):
     def __init__(self, *args, **kwargs):
         HTMLParser.__init__(self)
@@ -245,6 +250,7 @@ class DC_HTMLParser(HTMLParser):
         if (tag == "tr") and (self.teamTable):
             self.header = False
 
+# Injury Lists HTML Parsing
 class Injury_HTMLParser(HTMLParser):
     def __init__(self, *args, **kwargs):
         HTMLParser.__init__(self)
@@ -283,6 +289,7 @@ class Injury_HTMLParser(HTMLParser):
                 self.players.append(self.player)
                 self.player = []
 
+# Fantasy Football Player Class
 class Player:
     def __init__(self, name, team, pos, cat, fpts, cus_fpts, marg_val, auct_val,
                  budget, s_infl, d_infl, depth, games, qual_st, qs_per, injury,
@@ -316,10 +323,7 @@ class Player:
                      self.status, self.notes, self.price, self.real_val, self.owner))
 
 
-
 # FUNCTIONS =================================================================================
-# TODO comment
-
 def parse_depth_charts():
     if (VERBOSITY >= 2):
         print ("Parsing depth charts...")
@@ -404,7 +408,7 @@ def parse_quality_starts( position ):
         good      = int(player[5])
         great     = int(player[7])
         qual_per  = player[10]
-
+                               # games           quality start stat     % games quality
         qs_table.append([name, (bad+good+great), (good*4 + great*6.25), qual_per])
 
     url.close()
@@ -464,24 +468,8 @@ def assign_quality_starts( player_table ):
                 break
         if not name_match:
             if (VERBOSITY >= 2):
-                print ("WARNING: " + name + " from quality starts table not found in player table!")
-
-
-#    games      = 0
-#    qual_st    = 0
-#    qual_per   = ""
-
-#    for player in qs_table:
-#        if (name in player[0].replace("'", "")):
-#            name_match = True
-#            games      = player[1]
-#            qual_st    = player[2]
-#            qual_per   = player[3]
-#            break
-#    if not name_match:
-#        if (VERBOSITY >= 2):
-#            print ("No quality starts name match for: " + name)
-
+                print ("WARNING: " + name + " from quality starts table \
+                        not found in player table!")
 
 def assign_depth_charts( player_table ):
     dc_table   = parse_depth_charts()
@@ -497,22 +485,8 @@ def assign_depth_charts( player_table ):
                 break
         if not name_match:
             if (VERBOSITY >= 2):
-                print ("WARNING: " + name + " from depth chart table not found in player table!")
-
-
-#    name_match = False
-#    depth      = ""
-#
-#    for dc in dc_table:
-#        if (name in dc[0]):
-#            name_match = True
-#            depth      = dc[1]
-#            break
-#    if not name_match:
-#        if (VERBOSITY >= 2):
-#            print ("No depth chart name match for: " + name)
-#
-#    return depth
+                print ("WARNING: " + name + " from depth chart table \
+                        not found in player table!")
 
 def assign_injuries( player_table ):
     inj_table  = parse_injuries()
@@ -529,22 +503,8 @@ def assign_injuries( player_table ):
                 break
         if not name_match:
             if (VERBOSITY >= 2):
-                print ("WARNING: " + name + " from injury chart table not found in player table!")
-
-
-#    name_match = False
-#    injury     = ""
-#
-#    for inj in inj_table:
-#        if (name in inj[0].replace("'", "")):
-#            name_match = True
-#            injury     = inj[1]
-#            break
-#    if not name_match:
-#        if (VERBOSITY >= 2):
-#            print ("No injury name match for: " + name)
-#
-#    return injury
+                print ("WARNING: " + name + " from injury chart table \
+                        not found in player table!")
 
 def assign_marginal_value( player_table, tier_val, total_marg_val ):
     for player in player_table:
@@ -564,31 +524,6 @@ def assign_marginal_value( player_table, tier_val, total_marg_val ):
         total_marg_val += player.marg_val
 
     return total_marg_val
-
-def print_player_table( player_table ):
-    i = 1
-    for player in player_table:
-        if (i == 1):
-            print ('-' * 109)
-            print ('  # | ' + "Player Name".center(30) + ' | ' + "Team " + ' | '
-                    + "P." + ' | ' + "C." + ' | ' + "FPts." + ' | ' + "Cust. " +
-                    ' | ' + "Marg. " + ' | ' + "Gms." + ' | ' + "Q.S. " + ' | ' +
-                    "QS%" + ' | ' + "DC " + ' | ')
-            print ('-' * 109)
-        print ("%3d" % i                 + ' | ' +
-               player.name.ljust(30)     + ' | ' +
-               player.team.ljust(5)      + ' | ' +
-               player.pos                + ' | ' +
-               player.cat.ljust(2)       + ' | ' +
-               player.fpts.rjust(5)      + ' | ' +
-               "%6.2f" % player.cus_fpts + ' | ' +
-               "%6.2f" % player.marg_val + ' | ' +
-               "%4d"   % player.games    + ' | ' +
-               "%5.2f" % player.qual_st  + ' | ' +
-               player.qs_per.rjust(3)    + ' | ' +
-               player.depth.rjust(3)     + ' | ' )
-
-        i += 1
 
 def player_tiers( position, player_table ):
     if ( position == "QB" ):
@@ -632,6 +567,143 @@ def player_tiers( position, player_table ):
 
     return tier_val
 
+def print_player_table( player_table, out_file = False ):
+    i = 1
+    for player in player_table:
+        if (out_file):
+            if (DRAFT_TYPE == "auction"):
+                if (i == 1):
+                    out_file.write("Player Name"              + '\t' +
+                                   "Team"                     + '\t' +
+                                   "Position"                 + '\t' +
+                                   "Category"                 + '\t' +
+                                   "Projected Fantasy Points" + '\t' +
+                                   "Custom Fantasy Points"    + '\t' +
+                                   "Marginal Value"           + '\t' +
+                                   "Auction Value"            + '\t' +
+                                   "Budget Percentage"        + '\t' +
+                                   "Static Inflation"         + '\t' +
+                                   "Dynamic Inflation"        + '\t' +
+                                   "Depth Chart"              + '\t' +
+                                   "Games Played Last Season" + '\t' +
+                                   "Quality Start (Max:100)"  + '\t' +
+                                   "Quality Start Percentage" + '\t' +
+                                   "Injury"                   + '\t' +
+                                   "Status"                   + '\t' +
+                                   "Notes"                    + '\t' +
+                                   "Purchase Price"           + '\t' +
+                                   "Realized Value"           + '\t' +
+                                   "Owner"                    + '\n')
+
+                out_file.write(player.name                  + '\t' +
+                               player.team                  + '\t' +
+                               player.pos                   + '\t' +
+                               player.cat                   + '\t' +
+                               player.fpts                  + '\t' +
+                               "%.2f" % player.cus_fpts     + '\t' +
+                               "%.2f" % player.marg_val     + '\t' +
+                               "$%d" % int(player.auct_val) + '\t' +
+                               "%.1f%%" % player.budget     + '\t' +
+                               "$%d" % int(player.s_infl)   + '\t' +
+                               player.d_infl                + '\t' +
+                               player.depth                 + '\t' +
+                               "%d" % player.games          + '\t' +
+                               "%.2f" % player.qual_st      + '\t' +
+                               player.qs_per                + '\t' +
+                               player.injury                + '\t' +
+                               player.status                + '\t' +
+                               player.notes                 + '\t' +
+                               player.price                 + '\t' +
+                               player.real_val              + '\t' +
+                               player.owner                 + '\n' )
+            else: # Snake draft
+                if (i == 1):
+                    out_file.write("Player Name"              + '\t' +
+                                   "Team"                     + '\t' +
+                                   "Position"                 + '\t' +
+                                   "Category"                 + '\t' +
+                                   "Projected Fantasy Points" + '\t' +
+                                   "Custom Fantasy Points"    + '\t' +
+                                   "Marginal Value"           + '\t' +
+                                   "Depth Chart"              + '\t' +
+                                   "Games Played Last Season" + '\t' +
+                                   "Quality Start (Max:100)"  + '\t' +
+                                   "Quality Start Percentage" + '\t' +
+                                   "Injury"                   + '\t' +
+                                   "Status"                   + '\t' +
+                                   "Notes"                    + '\t' +
+                                   "Owner"                    + '\n')
+
+                out_file.write(player.name                  + '\t' +
+                               player.team                  + '\t' +
+                               player.pos                   + '\t' +
+                               player.cat                   + '\t' +
+                               player.fpts                  + '\t' +
+                               "%.2f" % player.cus_fpts     + '\t' +
+                               "%.2f" % player.marg_val     + '\t' +
+                               player.depth                 + '\t' +
+                               "%d" % player.games          + '\t' +
+                               "%.2f" % player.qual_st      + '\t' +
+                               player.qs_per                + '\t' +
+                               player.injury                + '\t' +
+                               player.status                + '\t' +
+                               player.notes                 + '\t' +
+                               player.owner                 + '\n' )
+
+
+        if (VERBOSITY >= 1):
+            if (DRAFT_TYPE == "auction"):
+                if (i == 1):
+                    print ('-' * 130)
+                    print ('  # | ' + "Player Name".center(30) + ' | ' + "Team " + ' | '
+                            + "P." + ' | ' + "C." + ' | ' + "FPts." + ' | ' + "Cust. " +
+                            ' | ' + "Marg. " + ' | ' + "A.V." + ' | ' + "B.%" + ' | ' +
+                            "Inf." + ' | ' + "DC " + ' | ' + "Gms." + ' | ' + " Q.S." +
+                            ' | ' + " QS%" + ' | ')
+                    print ('-' * 130)
+
+                print ("%3d" % i                      + ' | ' +
+                       player.name.ljust(30)          + ' | ' +
+                       player.team.ljust(5)           + ' | ' +
+                       player.pos                     + ' | ' +
+                       player.cat.ljust(2)            + ' | ' +
+                       player.fpts.rjust(5)           + ' | ' +
+                       "%6.2f" % player.cus_fpts      + ' | ' +
+                       "%6.2f" % player.marg_val      + ' | ' +
+                       "$%d"   % int(player.auct_val) + ' | ' +
+                       "%.1f%%" % player.budget       + ' | ' +
+                       "$%d"   % int(player.s_infl)   + ' | ' +
+                       player.depth.rjust(3)          + ' | ' +
+                       "%4d"   % player.games         + ' | ' +
+                       "%5.2f" % player.qual_st       + ' | ' +
+                       player.qs_per.rjust(4)         + ' | ' )
+
+            else: # Snake draft
+                if (i == 1):
+                    print ('-' * 110)
+                    print ('  # | ' + "Player Name".center(30) + ' | ' + "Team " + ' | '
+                            + "P." + ' | ' + "C." + ' | ' + "FPts." + ' | ' + "Cust. " +
+                            ' | ' + "Marg. " + ' | ' + "DC " + ' | ' + "Gms." + ' | ' +
+                            " Q.S." + ' | ' + " QS%" + ' | ')
+                    print ('-' * 110)
+
+                print ("%3d" % i                      + ' | ' +
+                       player.name.ljust(30)          + ' | ' +
+                       player.team.ljust(5)           + ' | ' +
+                       player.pos                     + ' | ' +
+                       player.cat.ljust(2)            + ' | ' +
+                       player.fpts.rjust(5)           + ' | ' +
+                       "%6.2f" % player.cus_fpts      + ' | ' +
+                       "%6.2f" % player.marg_val      + ' | ' +
+                       player.depth.rjust(3)          + ' | ' +
+                       "%4d"   % player.games         + ' | ' +
+                       "%5.2f" % player.qual_st       + ' | ' +
+                       player.qs_per.rjust(4)         + ' | ' )
+
+        i += 1
+
+
+# MAIN ======================================================================================
 def main(argv):
 
     all_player_table = []
@@ -639,7 +711,7 @@ def main(argv):
     total_marg_val   = 0.0
 
     try:
-        opts, args = getopt.getopt(argv,"hv:o:")
+        opts, args = getopt.getopt(argv,"hv:o:t:")
     except getopt.GetoptError:
         print (HELP_MSG)
         sys.exit(2)
@@ -649,10 +721,21 @@ def main(argv):
             sys.exit()
         elif (opt == '-v'):
             global VERBOSITY
-            VERBOSITY = int(arg)
+            if ((arg == '0') or (arg == '1') or (arg == '2')):
+                VERBOSITY = int(arg)
+            else:
+                print (HELP_MSG)
+                sys.exit(2)
         elif (opt == '-o'):
             global OUT_FILE
             OUT_FILE = arg
+        elif (opt == '-t'):
+            global DRAFT_TYPE
+            if (arg == 'snake'):
+                DRAFT_TYPE = arg
+            else:
+                print (HELP_MSG)
+                sys.exit(2)
 
     if not OUT_FILE:
         print ("No output file selected, skipping file write")
@@ -679,13 +762,9 @@ def main(argv):
             f = open(OUT_FILE, "w")
 
 
-
-
     # QBs ===================================================================================
     if (VERBOSITY >= 0):
         print ('\n========== QBs ==========')
-
-#    qs_table = parse_quality_starts("QB")
 
     player_table = parse_projections("qb")
 
@@ -714,14 +793,6 @@ def main(argv):
                      (RUSH_TD_PTS  * float(rush_tds )) +
                      (FUMB_PTS     * float(fmbls    )))
 
-#        # Apply quality starts information
-#        [games, qual_st, qual_per] = assign_quality_starts(name, qs_table)
-#
-#        # Apply depth chart information
-#        depth = assign_depth_chart(name, dc_table)
-#
-#        # Build temporary table with Player class objects for position
-#        tmp_table.append(Player(name, team, "QB", "", fpts, cus_fpts, 0.0, 0.0, games, qual_st, qual_per, depth))
         tmp_table.append(Player(name, team, "QB", "", fpts, cus_fpts, 0.0, 0.0,
                                 0.0, 0.0, "", "", 0, 0.0, "", "", "", "", "", "", ""))
 
@@ -740,7 +811,7 @@ def main(argv):
         print ("Assigning marginal value...")
     total_marg_val = assign_marginal_value (qb_table, qb_tier_val, total_marg_val)
 
-    if (VERBOSITY >= 1):
+    if (VERBOSITY >= 2):
         print ("Printing player table...")
         print_player_table (qb_table)
 
@@ -751,8 +822,6 @@ def main(argv):
     # RBs ===================================================================================
     if (VERBOSITY >= 0):
         print ('\n========== RBs ==========')
-
-#    qs_table = parse_quality_starts("RB")
 
     player_table = parse_projections("rb")
 
@@ -778,17 +847,8 @@ def main(argv):
                     (REC_TD_PTS   * float(rec_tds )) +
                     (FUMB_PTS     * float(fmbls   )))
 
-#        # Apply quality starts information
-#        [games, qual_st, qual_per] = assign_quality_starts(name, qs_table)
-#
-#        # Apply depth chart information
-#        depth = assign_depth_chart(name, dc_table)
-#
-#        # Build temporary table with Player class objects for position
-#        tmp_table.append(Player(name, team, "RB", "", fpts, cus_fpts, 0.0, 0.0, games, qual_st, qual_per, depth))
         tmp_table.append(Player(name, team, "RB", "", fpts, cus_fpts, 0.0, 0.0,
                                 0.0, 0.0, "", "", 0, 0.0, "", "", "", "", "", "", ""))
-
 
     # Apply position table as temporary table sorted on custom fantasy points
     if (VERBOSITY >= 2):
@@ -805,7 +865,7 @@ def main(argv):
         print ("Assigning marginal value...")
     total_marg_val = assign_marginal_value (rb_table, rb_tier_val, total_marg_val)
 
-    if (VERBOSITY >= 1):
+    if (VERBOSITY >= 2):
         print ("Printing player table...")
         print_player_table (rb_table)
 
@@ -816,8 +876,6 @@ def main(argv):
     # WRs ===================================================================================
     if (VERBOSITY >= 0):
         print ('\n========== WRs ==========')
-
-#    qs_table = parse_quality_starts("WR")
 
     player_table = parse_projections("wr")
 
@@ -843,17 +901,8 @@ def main(argv):
                     (REC_TD_PTS   * float(rec_tds )) +
                     (FUMB_PTS     * float(fmbls   )))
 
-#        # Apply quality starts information
-#        [games, qual_st, qual_per] = assign_quality_starts(name, qs_table)
-#
-#        # Apply depth chart information
-#        depth = assign_depth_chart(name, dc_table)
-#
-#        # Build temporary table with Player class objects for position
-#        tmp_table.append(Player(name, team, "WR", "", fpts, cus_fpts, 0.0, 0.0, games, qual_st, qual_per, depth))
         tmp_table.append(Player(name, team, "WR", "", fpts, cus_fpts, 0.0, 0.0,
                                 0.0, 0.0, "", "", 0, 0.0, "", "", "", "", "", "", ""))
-
 
     # Apply position table as temporary table sorted on custom fantasy points
     if (VERBOSITY >= 2):
@@ -870,7 +919,7 @@ def main(argv):
         print ("Assigning marginal value...")
     total_marg_val = assign_marginal_value (wr_table, wr_tier_val, total_marg_val)
 
-    if (VERBOSITY >= 1):
+    if (VERBOSITY >= 2):
         print ("Printing player table...")
         print_player_table (wr_table)
 
@@ -881,8 +930,6 @@ def main(argv):
     # TEs ===================================================================================
     if (VERBOSITY >= 0):
         print ('\n========== TEs ==========')
-
-#    qs_table = parse_quality_starts("TE")
 
     player_table = parse_projections("te")
 
@@ -902,17 +949,8 @@ def main(argv):
                     (REC_TD_PTS   * float(rec_tds)) +
                     (FUMB_PTS     * float(fmbls  )))
 
-#        # Apply quality starts information
-#        [games, qual_st, qual_per] = assign_quality_starts(name, qs_table)
-#
-#        # Apply depth chart information
-#        depth = assign_depth_chart(name, dc_table)
-#
-#        # Build temporary table with Player class objects for position
-#        tmp_table.append(Player(name, team, "TE", "", fpts, cus_fpts, 0.0, 0.0, games, qual_st, qual_per, depth))
         tmp_table.append(Player(name, team, "TE", "", fpts, cus_fpts, 0.0, 0.0,
                                 0.0, 0.0, "", "", 0, 0.0, "", "", "", "", "", "", ""))
-
 
     # Apply position table as temporary table sorted on custom fantasy points
     if (VERBOSITY >= 2):
@@ -929,7 +967,7 @@ def main(argv):
         print ("Assigning marginal value...")
     total_marg_val = assign_marginal_value (te_table, te_tier_val, total_marg_val)
 
-    if (VERBOSITY >= 1):
+    if (VERBOSITY >= 2):
         print ("Printing player table...")
         print_player_table (te_table)
 
@@ -938,113 +976,46 @@ def main(argv):
     all_player_table.extend(te_table)
 
     # AUCTION VALUES ========================================================================
-#    # Create depth chart table
-#    dc_table = parse_depth_charts()
-
     # Apply quality starts information
-    assign_quality_starts(all_player_table)
+    assign_quality_starts( all_player_table )
 
     # Apply depth chart information
-    assign_depth_charts(all_player_table)
+    assign_depth_charts( all_player_table )
 
     # Apply injury information
-    assign_injuries(all_player_table)
+    assign_injuries( all_player_table )
 
-    marg_pts_per_dollar = total_marg_val / DISCR_MONEY
-    if (VERBOSITY >= 1):
-        print ('\n===== CALCULATIONS ======')
-        print ("Total Marginal Value   : " + "%.3f" % total_marg_val)
-        print ("Marg. Points Per Dollar: " + "%.3f" % marg_pts_per_dollar)
-        print ("Keeper Value Inflation : " + "%.3f" % KEEPER_INFLATION)
+    if (DRAFT_TYPE == "auction"):
+        marg_pts_per_dollar = total_marg_val / DISCR_MONEY
+        if (VERBOSITY >= 1):
+            print ('\n===== CALCULATIONS ======')
+            print ("Total Marginal Value   : " + "%.3f" % total_marg_val)
+            print ("Marg. Points Per Dollar: " + "%.3f" % marg_pts_per_dollar)
+            print ("Keeper Value Inflation : " + "%.3f" % KEEPER_INFLATION)
 
-    # Sort all players by marginal value to get value rankings
+        if (VERBOSITY >= 2):
+            print ("Applying auction value, budget percentage, and static inflation...")
+        for player in all_player_table:
+            # Calculate remaining values
+            player.auct_val = math.ceil((player.marg_val / marg_pts_per_dollar) + 1)
+            player.budget   = ( player.auct_val / AUCTION_MONEY ) * 100
+            player.s_infl   = player.auct_val * KEEPER_INFLATION
+
     if (VERBOSITY >= 2):
-        print ("Sorting all players by marginal value...")
+        print ("Sorting all players by marginal value, then custom fantasy points...")
     tmp_table = all_player_table
-    all_player_table = sorted(tmp_table, key=lambda player : (player.marg_val, player.cust_fpts), reverse=True)
+    all_player_table = sorted(tmp_table, key=lambda player : (player.marg_val,
+                              player.cus_fpts), reverse=True)
 
-    # Write column categories to file
+    # Print all player table
     if OUT_FILE:
-        f.write("Player Name"              + '\t' +
-                "Team"                     + '\t' +
-                "Position"                 + '\t' +
-                "Category"                 + '\t' +
-                "Projected Fantasy Points" + '\t' +
-                "Custom Fantasy Points"    + '\t' +
-                "Marginal Value"           + '\t' +
-                "Auction Value"            + '\t' +
-                "Budget Percentage"        + '\t' +
-                "Static Inflation"         + '\t' +
-                "Dynamic Inflation"        + '\t' +
-                "Depth Chart"              + '\t' +
-                "Games Played Last Season" + '\t' +
-                "Quality Start (Max:100)"  + '\t' +
-                "Quality Start Percentage" + '\t' +
-                "Injury"                   + '\t' +
-                "Status"                   + '\t' +
-                "Notes"                    + '\t' +
-                "Purchase Price"           + '\t' +
-                "Realized Value"           + '\t' +
-                "Owner"                    + '\n')
+        print ("Printing sorted list to file, " + OUT_FILE + "...")
+        print_player_table (all_player_table, f)
 
-#TODO: combine this with function def (add variable to say what type of write)
-#    budget_per = 0.0
-#    inflation  = 0.0
-    i = 1
-    # Write player table and apply auction value, budget percentage, and static inflation
-    if (VERBOSITY >= 2):
-        print ("Applying auction value, budget percentage, and static inflation...")
-    for player in all_player_table:
-        # Calculate remaining values
-        player.auct_val = math.ceil((player.marg_val / marg_pts_per_dollar) + 1)
-        player.budget   = ( player.auct_val / AUCTION_MONEY ) * 100
-        player.s_infl   = player.auct_val * KEEPER_INFLATION
+    else:
+        print ("Printing sorted list...")
+        print_player_table (all_player_table)
 
-        # Write player data to file
-        if OUT_FILE:
-            f.write(player.name                  + '\t' +
-                    player.team                  + '\t' +
-                    player.pos                   + '\t' +
-                    player.cat                   + '\t' +
-                    player.fpts                  + '\t' +
-                    "%.2f" % player.cus_fpts     + '\t' +
-                    "%.2f" % player.marg_val     + '\t' +
-                    "$%d" % int(player.auct_val) + '\t' +
-                    "%.1f%%" % player.budget     + '\t' +
-                    "$%d" % int(player.s_infl)   + '\t' +
-                    player.d_infl                + '\t' +
-                    player.depth                 + '\t' +
-                    "%d" % player.games          + '\t' +
-                    "%.2f" % player.qual_st      + '\t' +
-                    player.qs_per                + '\t' +
-                    player.injury                + '\t' +
-                    player.status                + '\t' +
-                    player.notes                 + '\t' +
-                    player.price                 + '\t' +
-                    player.real_val              + '\t' +
-                    player.owner                 + '\n' )
-
-#        if (VERBOSITY >= 1):
-#            if (i == 1):
-#                print ('-' * 102)
-#                print ('  # | ' + "Player Name".center(30) + ' | ' + "Team " + ' | '
-#                      + "P." + ' | ' + "C." + ' | ' + "FPts." + ' | ' + "Cust. "
-#                      + ' | ' + "Marg. " + ' | ' + "A.V." + ' | ' + "B.%" + ' | '
-#                      + "Inf." + ' | ')
-#                print ('-' * 102)
-#            print ("%3d" % i                      + ' | ' +
-#                   player.name.ljust(30)          + ' | ' +
-#                   player.team.ljust(5)           + ' | ' +
-#                   player.pos                     + ' | ' +
-#                   player.cat.ljust(2)            + ' | ' +
-#                   player.fpts.rjust(5)           + ' | ' +
-#                   "%6.2f" % player.cus_fpts      + ' | ' +
-#                   "%6.2f" % player.marg_val      + ' | ' +
-#                   "$%3d"  % int(player.auct_val) + ' | ' +
-#                   "%2d%%" % int(player.budget)   + ' | ' +
-#                   "$%3d"  % int(player.s_infl)   + ' | ' )
-
-        i += 1
     # END ===================================================================================
     if (VERBOSITY >= 2):
         print ('\n========== END ==========')
@@ -1056,6 +1027,7 @@ def main(argv):
 
         print ("File created: " + OUT_FILE)
         print ("Import into Excel using tab delimiters")
+
 
 # MAIN ======================================================================================
 if __name__ == "__main__":
