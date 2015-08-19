@@ -43,15 +43,15 @@ starting_tes         = 1.33     # Max number of starting TEs per team
 #         Me                Pomy              HDR               MUGG
 #         FISH              HELL              (._. )            Psycho
 #         Osos              MOON              Dr.               865
-#         EdLa, AJGr, ????, DeMu, RaCo, ZaSt, DrBr, ViCr, JuTh, PeMa, CaJo, ????,
-#         ????, ????, ????, DeTh, ????, ????, ????, ????, ????, ????, ????, ????,
-#         AnLu, ????, ????, JuJo, JiGr, KeAl, ????, ????, ????, ????, ????, ????
-kpr_pr  = (43  + 7       + 1     + 1   + 3    + 41   + 1   + 1     + 31     + 38
-                         + 1
-          + 3            + 7     + 1   + 1                                                   )
-kpr_val = (44  + 36       + 45    + 28    + 33 + 29   + 20  + 32    + 38     + 49
-                         + 46
-          + 17           + 39    + 48    + 18                                                )
+#         EdLa, AJGr, ShVe, DeMu, DoMa, ZaSt, DrBr, AnEl, JuTh, PeMa, CaJo, MaFo,
+#         RG3 , PeHa, MiCr, DeTh, BrMa, CoPa, MaSt, GiBe, RaJe, AlMo, JoNe, JoGo,
+#         WeWe, MaLy, VeDa, JuJo, JiGr, DeBr, ReBu, AlJe, JoBe, ????, ????, ????
+kpr_pr  = ( 43  + 7   + 7   + 1   + 16  + 3   + 41  + 1   + 1   + 31  + 38  + 61
+          + 17  + 13  + 4   + 1   + 35  + 2   + 6   + 32  + 1   + 1   + 21  + 2
+          + 14  + 41  + 13  + 7   + 1   + 28  + 17  + 5   + 1   + 0   + 0   + 0  )
+kpr_val = ( 44  + 36  + 30  + 44  + 38  + 33  + 29  + 34  + 32  + 39  + 49  + 61
+          + 13  + 16  + 22  + 46  + 38  + 17  + 18  + 43  + 24  + 26  + 30  + 0
+          + 7   + 35  + 17  + 39  + 48  + 40  + 31  + 31  + 31  + 0   + 0   + 0  )
 
 keeper_money_used    = kpr_pr   # Total amount of auction money used towards keepers
 keeper_value         = kpr_val  # Total amount of projected value absorbed by keepers

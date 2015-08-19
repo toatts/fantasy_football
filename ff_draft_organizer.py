@@ -3,7 +3,7 @@
 # Author : Jay Oatts
 # Email  : jay.oatts@gmail.com
 # Date   : 8/18/2014
-# Version: 0.4
+# Version: 1.0
 # Summary:
 # Scrapes projected consensus stats from http://www.fantasypros.com/nfl/projections for
 # fantasy football. Compiles useful stats and applies league rules to get approximate
@@ -655,28 +655,31 @@ def print_player_table( player_table, out_file = False ):
             if (DRAFT_TYPE == "auction"):
                 if (i == 1):
                     print ('-' * 130)
+                    #TODO
+#                    print ("Po=Position, Ca=Category, FP=Fantasy Points, Custom=Customized Fantasy Points "
+                    print ('-' * 130)
                     print ('  # | ' + "Player Name".center(30) + ' | ' + "Team " + ' | '
-                            + "P." + ' | ' + "C." + ' | ' + "FPts." + ' | ' + "Cust. " +
-                            ' | ' + "Marg. " + ' | ' + "A.V." + ' | ' + "B.%" + ' | ' +
-                            "Inf." + ' | ' + "DC " + ' | ' + "Gms." + ' | ' + " Q.S." +
+                            + "Po" + ' | ' + "Ca" + ' | ' + " FP  " + ' | ' + "Custom" +
+                            ' | ' + "Margin" + ' | ' + " AV " + ' | ' + "Budg%" + ' | ' +
+                            "Inf" + ' | ' + "DC " + ' | ' + " GP " + ' | ' + " QS  " +
                             ' | ' + " QS%" + ' | ')
                     print ('-' * 130)
 
-                print ("%3d" % i                      + ' | ' +
-                       player.name.ljust(30)          + ' | ' +
-                       player.team.ljust(5)           + ' | ' +
-                       player.pos                     + ' | ' +
-                       player.cat.ljust(2)            + ' | ' +
-                       player.fpts.rjust(5)           + ' | ' +
-                       "%6.2f" % player.cus_fpts      + ' | ' +
-                       "%6.2f" % player.marg_val      + ' | ' +
-                       "$%d"   % int(player.auct_val) + ' | ' +
-                       "%.1f%%" % player.budget       + ' | ' +
-                       "$%d"   % int(player.s_infl)   + ' | ' +
-                       player.depth.rjust(3)          + ' | ' +
-                       "%4d"   % player.games         + ' | ' +
-                       "%5.2f" % player.qual_st       + ' | ' +
-                       player.qs_per.rjust(4)         + ' | ' )
+                print ("%3d" % i                        + ' | ' +
+                       player.name.ljust(30)            + ' | ' +
+                       player.team.ljust(5)             + ' | ' +
+                       player.pos                       + ' | ' +
+                       player.cat.ljust(2)              + ' | ' +
+                       player.fpts.rjust(5)             + ' | ' +
+                       "%6.2f"   % player.cus_fpts      + ' | ' +
+                       "%6.2f"   % player.marg_val      + ' | ' +
+                       "$%d"     % int(player.auct_val) + ' | ' +
+                       "%5.1f%%" % player.budget        + ' | ' +
+                       "$%d"     % int(player.s_infl)   + ' | ' +
+                       player.depth.rjust(3)            + ' | ' +
+                       "%4d"     % player.games         + ' | ' +
+                       "%5.2f"   % player.qual_st       + ' | ' +
+                       player.qs_per.rjust(4)           + ' | ' )
 
             else: # Snake draft
                 if (i == 1):
@@ -731,7 +734,7 @@ def main(argv):
             OUT_FILE = arg
         elif (opt == '-t'):
             global DRAFT_TYPE
-            if (arg == 'snake'):
+            if ((arg == 'snake') or (arg == 'auction')):
                 DRAFT_TYPE = arg
             else:
                 print (HELP_MSG)

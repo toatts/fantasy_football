@@ -30,6 +30,9 @@ $ python ff_draft_organizer.py -v [verbosity 0-2] -o [output file] -t [type snak
 
 Changelist:
 -----------
+###v1.0:
+- Cleanup from post draft
+- 
 ###v0.6:
 - Fix console display (try to merge with text printout)
 - Only display total table on -v 1
@@ -65,4 +68,5 @@ Changelist:
 
 Future Releases:
 ----------------
-- Write data to a database? Update database when new, read in current info otherwise?
+- Possibly write data to database
+- Try direct import into Excel and use VBA scripts/macros to manipulate
